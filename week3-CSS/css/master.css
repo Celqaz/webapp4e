@@ -1,0 +1,33 @@
+body{
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.5em;
+}
+h1{
+  color: rgba(25, 100, 253, 0.7);
+}
+img{
+  float: right;
+  margin: 1em
+}
+nav{
+  background-color: lightgrey;
+  height: 4em
+}
+nav ul{
+  list-style-type: none;
+  padding-left: 0;
+  vertical-align: middle;
+}
+nav li{
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.back{
+  position: absolute;
+  left:20px
+}
+.forward{
+  position: absolute;
+  right:20px
+}
