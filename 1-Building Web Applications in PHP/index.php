@@ -27,7 +27,8 @@
           <a href="week5-PHP_basic\first" class="btn btn-primary btn-lg" role="button">Week 5- PHP Basic</a>
           <a href="week6-Arrays\index.php" class="btn btn-primary btn-lg" role="button">Week 6- PHP Arrays</a>
           <a href="week6-Arrays\practice.php" class="btn btn-primary btn-lg" role="button">Week 6- Practice</a>
-
+          <a href="week7-Functions\practice" class="btn btn-primary btn-lg" role="button">Week 7- Practice</a>
+          <a href="week8-Assignment" class="btn btn-primary btn-lg" role="button">Week 8- Assignment</a>
           </div>
           </div>
         </div>
