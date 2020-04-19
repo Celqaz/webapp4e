@@ -44,12 +44,12 @@ if (isset($_POST["email"]) && isset($_POST["pass"])) {
 <!DOCTYPE html>
 <html>
 <head>
-<title>65b036a5-Login Page</title>
+<title>3c1e97c3-Login Page</title>
 <?php require_once "bootstrap.php"; ?>
 </head>
 <body>
 <div class="container">
-<h1>65b036a5 - Please Log In</h1>
+<h1>3c1e97c3 - Please Log In</h1>
 <?php
 if (isset($_SESSION['error'])) {
     echo('<p style="color: red;">'.htmlentities($_SESSION['error'])."</p>\n");

@@ -14,6 +14,10 @@ if (isset($_SESSION['success'])) {
     unset($_SESSION['success']);
 }
 echo('<table border="1">'."\n");
+if (isset($_SESSION["success_add"])) {
+    echo('<p style="color:green">'.htmlentities($_SESSION["success_add"])."</p>\n");
+    unset($_SESSION["success_add"]);
+};
 $stmt = $pdo->query("SELECT name, email, password, user_id FROM users");
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     // foreach ($rows as $row) {

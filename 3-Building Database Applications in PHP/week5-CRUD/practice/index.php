@@ -12,7 +12,7 @@ if (isset($_SESSION["email"])) {
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title>Bin Li - Welcome to Auto DataBase</title>
+    <title>3c1e97c3 - Welcome to Auto DataBase</title>
     <?php require_once "bootstrap.php"; ?>
   </head>
   <body>
@@ -21,17 +21,26 @@ if (isset($_SESSION["email"])) {
 <?php
 if (! isset($_SESSION["email"])) {
     echo '<p>
-  <a href="login.php">Please Log In</a>
+  <a href="login.php">Please log in</a>
   </p>
   <p>
   Attempt to go to
   <a href="add.php">add data</a> without logging in
   </p>';
 } else {
-    if (count($rows) <1) {
-        echo "no entry";
+    // if (count($rows) <1) {
+    if ($rows == false) {
+        echo "<p>No rows found</p>";
     } else {
-        echo('<table border="1" class="table table-bordered">'."\n");
+        if (isset($_SESSION["success"])) {
+            echo('<p style="color:green">'.htmlentities($_SESSION["success"])."</p>\n");
+            unset($_SESSION["success"]);
+        };
+        if (isset($_SESSION["error"])) {
+            echo('<p style="color:red">'.htmlentities($_SESSION["error"])."</p>\n");
+            unset($_SESSION["error"]);
+        };
+        echo('<table border="1" class="table table-bordered ">'."\n");
         foreach ($rows as $row) {
             echo "<tr><td>";
             echo(htmlentities($row['make']));
@@ -42,8 +51,8 @@ if (! isset($_SESSION["email"])) {
             echo("</td><td>");
             echo(htmlentities($row['mileage']));
             echo("</td><td>");
-            echo('<a href="edit.php?user_id='.$row['autos_id'].'">Edit</a> / ');
-            echo('<a href="delete.php?user_id='.$row['autos_id'].'">Delete</a>');
+            echo('<a href="edit.php?autos_id='.$row['autos_id'].'">Edit</a> / ');
+            echo('<a href="delete.php?autos_id='.$row['autos_id'].'">Delete</a>');
             echo("</td></tr>\n");
         };
         echo("</table>");
