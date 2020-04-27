@@ -3,6 +3,7 @@ session_start();
 require_once "pdo.php";
 require_once "util.php";
 require_once "bootstrap.php";
+require_once "val.php";
 
 if (! isset($_SESSION["user_id"])) {
     die("ACCESS DENIED");
@@ -16,7 +17,8 @@ if (isset($_POST['cancel'])) {
 if (isset($_POST['first_name']) && isset($_POST['last_name'])
      && isset($_POST['email']) && isset($_POST['headline']) && isset($_POST['summary'])) {
     # 验证数据
-    $msg = validateProfile();
+    // $msg = validateProfile();
+    $msg = validateData();
     if (is_string($msg)) {
         $_SESSION["error"] = $msg;
         header('Location: add.php');
@@ -26,13 +28,22 @@ if (isset($_POST['first_name']) && isset($_POST['last_name'])
     // insertData($pdo);
     insertProfileData($pdo);
     $profile_id = $pdo->lastInsertId();
-    $msg = validatePos();
-    if (is_string($msg)) {
-        $_SESSION["error"] = $msg;
-        header('Location: add.php');
-        return;
-    }
-    insertPosData($pdo, $profile_id);
+    // $msg = validatePos();
+    // if (is_string($msg)) {
+    //     $_SESSION["error"] = $msg;
+    //     header('Location: add.php');
+    //     return;
+    // }
+    insertDataPos($pdo, $profile_id);
+    insertDataEdu($pdo);
+    // insert edu
+    // $msg = validateEdu();
+    // if (is_string($msg)) {
+    //     $_SESSION["error"] = $msg;
+    //     header('Location: add.php');
+    //     return;
+    // }
+    // insertDataEdu($pdo, $profile_id);
 
     $_SESSION['success'] = 'added';
     header('Location: index.php') ;
@@ -113,7 +124,7 @@ $(document).ready(function(){
   window.console && console.log("Adding position" + countEdu);
   var source = $('#edu_template').html();
   window.console && console.log(source);
-  $('#edu_fields').append(source.replace(/@COUNT@/, countEdu));
+  $('#edu_fields').append(source.replace(/@COUNT@/g, countEdu));
   // $('#edu_fields').append(source);
   //Event handler
   });
@@ -124,7 +135,7 @@ $(document).ready(function(){
   <div id = "edu@COUNT@">
   <p>Year:
   <input type="text" name="edu_year@COUNT@" value="">
-  <input type="button" onclick="$('edu_year@COUNT@').remove();return false;" value="-"><br></p>
+  <input type="button" onclick="$('#edu@COUNT@').remove();return false;" value="-"><br></p>
   <p>School:
   <input type="text" size="80" name="edu_school@COUNT@" class="school" value="">
   </p>
