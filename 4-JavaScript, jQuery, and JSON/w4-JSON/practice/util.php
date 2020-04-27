@@ -62,15 +62,17 @@ function insertDataPos($pdo, $profile_id)
     }# for loop
 };
 // insert EDU
-function insertDataEdu($pdo)
+function insertDataEdu($pdo, $profile_id)
 {
     $rank = 1;
     for ($i=1; $i <= 9  ; $i++) {
         if (! isset($_POST['edu_school'.$i])) {
             continue;
         }
+        $edu_year = $_POST['edu_year'.$i];
         $edu_school = $_POST['edu_school'.$i];
-        error_log($edu_school);
+
+        // error_log($edu_school);
         // 根据用户输入的institution name ，查找数据库中是否存在该institution，没有就添加，有就do nothing
         $stmt =$pdo->prepare('SELECT institution_id FROM institution WHERE name = :name');
         $stmt -> execute(
@@ -79,7 +81,7 @@ function insertDataEdu($pdo)
         )
         );
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        error_log($row);
+        // error_log($row);
         // 判断是否存在,返回 institution_id
         if ($row=== false) {
             $insertIns = $pdo->prepare('INSERT INTO institution(name) VALUES (:name)');
@@ -92,21 +94,21 @@ function insertDataEdu($pdo)
         } else {
             $institution_id = $row['institution_id'];
         }
-        // error_log
-
-//         $sql = "INSERT INTO profile(user_id, first_name, last_name, email, headline, summary)
-// VALUES (:user_id, :first_name, :last_name, :email, :headline, :summary)";
-//         $stmt = $pdo->prepare($sql);
-//         $stmt->execute(
-//             array(
-//     ':user_id' => $_SESSION['user_id'],
-//     ':first_name' => $_POST['first_name'],
-//     ':last_name' => $_POST['last_name'],
-//     ':email' => $_POST['email'],
-//     ':headline' => $_POST['headline'],
-//     ':summary' => $_POST['summary']
-//   )
-//         );
+        error_log('-----------'.$profile_id.'----------------');
+        error_log('-----------'.$institution_id.'----------------');
+        error_log('-----------'.$rank.'----------------');
+        error_log('-----------'.$edu_year.'----------------');
+        $stmt= $pdo->prepare('INSERT INTO `education`(`profile_id`, `institution_id`, `rank` ,`year`)
+        VALUES (:profile_id, :institution_id, :rank, :year)');
+        $stmt->execute(
+            array(
+                      ':profile_id' => $profile_id,
+                      ':institution_id' => $institution_id,
+                      ':rank' => $rank,
+                      ':year' =>$edu_year
+                    )
+        );
+        $rank++;
     }
 }
 

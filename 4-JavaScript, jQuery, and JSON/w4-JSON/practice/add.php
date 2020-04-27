@@ -35,7 +35,7 @@ if (isset($_POST['first_name']) && isset($_POST['last_name'])
     //     return;
     // }
     insertDataPos($pdo, $profile_id);
-    insertDataEdu($pdo);
+    insertDataEdu($pdo, $profile_id);
     // insert edu
     // $msg = validateEdu();
     // if (is_string($msg)) {
