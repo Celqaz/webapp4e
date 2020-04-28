@@ -1,38 +1,40 @@
 <?php
 session_start();
 require_once "pdo.php";
-// TABLE profile
-$stmt = $pdo->prepare("SELECT profile_id, user_id,first_name, last_name, email, headline, summary FROM profile where profile_id= :xyz");
-$stmt->execute(array(":xyz" => $_GET['profile_id']));
-$row = $stmt->fetch(PDO::FETCH_ASSOC);
-// TABLE position
-$stmt2 = $pdo->prepare("SELECT year,description FROM position where profile_id= :xyz");
-$stmt2->execute(array(":xyz" => $_GET['profile_id']));
-$rows2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+require_once "util.php";
+$data_array =resumeInfo($pdo, $_GET['profile_id']);
 ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title>43b5c2f6 - Profile Information</title>
+    <title>1533e368 - Profile Information</title>
     <?php require_once "bootstrap.php"; ?>
   </head>
   <body>
     <div class="container">
       <h1>Profile Information</h1>
         <?php
-        echo('<p>First Name: '.htmlentities($row["first_name"]).'</p>');
-        echo('<p>Last Name: '.htmlentities($row["last_name"]).'</p>');
-        echo('<p>Email: '.htmlentities($row["email"]).'</p>');
-        echo('<p>Headline:<br>'.htmlentities($row["headline"]).'</p>');
-        echo('<p>Summary:<br>'.htmlentities($row["summary"]).'</p>');
+        echo('<p>First Name: '.htmlentities($data_array['pro']["first_name"]).'</p>');
+        echo('<p>Last Name: '.htmlentities($data_array['pro']["last_name"]).'</p>');
+        echo('<p>Email: '.htmlentities($data_array['pro']["email"]).'</p>');
+        echo('<p>Headline:<br>'.htmlentities($data_array['pro']["headline"]).'</p>');
+        echo('<p>Summary:<br>'.htmlentities($data_array['pro']["summary"]).'</p>');
         ?>
+        <p>Education</p>
+        <?php
+        echo('<ul>');
+        foreach ($data_array['edu'] as $rowEdu) {
+            echo('<li>'.htmlentities($rowEdu['year']).': '.htmlentities($rowEdu['name']).'</li>');
+        }
+        echo('</ul>');
+         ?>
         <p>Position</p>
         <?php
-        // print_r($rows2);
+        // print_r($rowsPos);
         echo('<ul>');
-        foreach ($rows2 as $row2) {
-            echo('<li>'.$row2['year'].': '.$row2['description'].'</li>');
+        foreach ($data_array['pos'] as $rowPos) {
+            echo('<li>'.htmlentities($rowPos['year']).': '.htmlentities($rowPos['description']).'</li>');
         }
         echo('</ul>');
          ?>

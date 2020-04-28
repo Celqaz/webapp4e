@@ -17,7 +17,6 @@ if (isset($_POST['cancel'])) {
 if (isset($_POST['first_name']) && isset($_POST['last_name'])
      && isset($_POST['email']) && isset($_POST['headline']) && isset($_POST['summary'])) {
     # 验证数据
-    // $msg = validateProfile();
     $msg = validateData();
     if (is_string($msg)) {
         $_SESSION["error"] = $msg;
@@ -25,25 +24,11 @@ if (isset($_POST['first_name']) && isset($_POST['last_name'])
         return;
     }
 
-    // insertData($pdo);
-    insertProfileData($pdo);
+    insertDataPro($pdo);
     $profile_id = $pdo->lastInsertId();
-    // $msg = validatePos();
-    // if (is_string($msg)) {
-    //     $_SESSION["error"] = $msg;
-    //     header('Location: add.php');
-    //     return;
-    // }
     insertDataPos($pdo, $profile_id);
     insertDataEdu($pdo, $profile_id);
-    // insert edu
-    // $msg = validateEdu();
-    // if (is_string($msg)) {
-    //     $_SESSION["error"] = $msg;
-    //     header('Location: add.php');
-    //     return;
-    // }
-    // insertDataEdu($pdo, $profile_id);
+
 
     $_SESSION['success'] = 'added';
     header('Location: index.php') ;
@@ -55,7 +40,7 @@ if (isset($_POST['first_name']) && isset($_POST['last_name'])
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title>4b53088e - Welcome to Auto DataBase</title>
+    <title>1533e368 - Welcome to Auto DataBase</title>
   </head>
   <body>
     <div class="container">
@@ -126,9 +111,13 @@ $(document).ready(function(){
   window.console && console.log(source);
   $('#edu_fields').append(source.replace(/@COUNT@/g, countEdu));
   // $('#edu_fields').append(source);
-  //Event handler
-  });
+  // 需要click驱动Event handler
+      $('.school').autocomplete({
+        source: "school.php"
+      });
+    });
 });
+
     </script>
   <!--html替换  -->
   <script id="edu_template" type="text">
@@ -140,6 +129,7 @@ $(document).ready(function(){
   <input type="text" size="80" name="edu_school@COUNT@" class="school" value="">
   </p>
   </div>
+
   </script>
   </body>
 </html>

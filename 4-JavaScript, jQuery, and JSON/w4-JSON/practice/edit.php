@@ -2,6 +2,7 @@
 session_start();
 require_once "pdo.php";
 require_once "util.php";
+require_once "val.php";
 require_once "bootstrap.php";
 
 if (! isset($_SESSION["user_id"])) {
@@ -19,68 +20,17 @@ if (isset($_POST['first_name']) && isset($_POST['last_name'])
      && isset($_POST['email']) && isset($_POST['headline']) && isset($_POST['summary'])) {
 
     // Data validation
-    $msg = validateProfile();
+    $msg =validateData();
     if (is_string($msg)) {
         $_SESSION["error"] = $msg;
         header('Location: edit.php?profile_id='.$profile_id);
         return;
     }
-
-    $sql = "UPDATE profile SET user_id = :user_id, first_name = :first_name, last_name = :last_name,
-            email = :email, headline = :headline, summary = :summary
-            WHERE profile_id = :profile_id";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute(
-        array(
-        ':user_id' => $_SESSION['user_id'],
-        ':first_name' => $_POST['first_name'],
-        ':last_name' => $_POST['last_name'],
-        ':email' => $_POST['email'],
-        ':headline' => $_POST['headline'],
-        ':summary' => $_POST['summary'],
-        ':profile_id' => $profile_id
-      )
-    );
-
-    // Clear out the old position entries
-    $sql = 'DELETE FROM position WHERE (profile_id = :profile_id)';
-    $stmt = $pdo -> prepare($sql);
-    $stmt -> execute(
-        array(
-        ':profile_id' => $profile_id
-      )
-    );
-
-    $msg = validatePos();
-    if (is_string($msg)) {
-        $_SESSION["error"] = $msg;
-        header('Location: edit.php?profile_id='.$profile_id);
+    if (info_update($pdo, $profile_id)) {
+        $_SESSION['success'] = 'Profile updated';
+        header('Location: index.php') ;
         return;
     }
-    // Insert new position data
-    insertPosData($pdo, $profile_id);
-
-//     // Clear out the old education entries
-//     $sql = 'DELETE FROM education WHERE (profile_id = :profile_id)';
-//     $stmt = $pdo -> prepare($sql);
-//     $stmt -> execute(
-//         array(
-//         ':profile_id' => $profile_id
-//       )
-//     );
-//     $profile_id = $profile_id ;
-//     // $msg = validateEdu();
-//     if (is_string($msg)) {
-//         $_SESSION["error"] = $msg;
-//         header('Location: edit.php?profile_id='.$profile_id);
-//         return;
-//     }
-//     // Insert new position data
-//     insertPosData($pdo, $profile_id);
-//     // Success and return
-//     $_SESSION['success'] = 'Profile updated';
-//     header('Location: index.php') ;
-//     return;
 }
 //
     $stmt = $pdo->prepare("SELECT * FROM profile where profile_id = :xyz");
@@ -92,20 +42,21 @@ if (isset($_POST['first_name']) && isset($_POST['last_name'])
         return;
     }
 
+$data_array =resumeInfo($pdo, $_GET['profile_id']);
 
-$fn = htmlentities($row['first_name']);
-$ln = htmlentities($row['last_name']);
-$em = htmlentities($row['email']);
-$hl = htmlentities($row['headline']);
-$sm = htmlentities($row['summary']);
+$fn = htmlentities($data_array['pro']['first_name']);
+$ln = htmlentities($data_array['pro']['last_name']);
+$em = htmlentities($data_array['pro']['email']);
+$hl = htmlentities($data_array['pro']['headline']);
+$sm = htmlentities($data_array['pro']['summary']);
 // $profile_id = $row['profile_id'];
 
-$positions = loadPos($pdo, $profile_id);
+// $positions = loadPos($pdo, $profile_id);
 // $educations = loadEdu($pdo, $profile_id);
 ?>
 <html>
 <body>
-<title>4b53088e - Edit Profile</title>
+<title>1533e368 - Edit Profile</title>
 <div class="container">
   <?php echo('<h1>Adding Profile for '. htmlentities($_SESSION["name"]) ."</h1>\n") ;
   flashMsg();
@@ -125,24 +76,29 @@ $positions = loadPos($pdo, $profile_id);
   <p>
       Education:
   <input id='addEdu' type="submit" value="+">
+  </p>
+<div class="container" id = "edu_fields">
+  <!--generate sth -->
+
 <div class="container" id = "edu_fields">
   <?php
   $countEdu = 0;
-  if (count($schools)>0) {
-      foreach ($schools as $school) {
+  // if (count($schools)>0) {
+      foreach ($data_array['edu'] as $school) {
           $countEdu++;
           echo('<div id="edu'.$countEdu.'">' ."\n");
           echo('<p>Year:<input type="text" name="edu_year'.$countEdu.'"');
-          echo('value="'.$school['year'].'"/>'. "\n");
+          echo('value="'.htmlentities($school['year']).'"/>'. "\n");
           echo('<input type="button" value="-" ');
           echo(' onclick = "$(\'#edu'.$countEdu.'\').remove();return false;">'."\n");
           echo("</p>\n");
           echo('<p>School:<input type="text" size="80" name="edu_school'.$countEdu.'" class="school" value="'.htmlentities($school['name']).'"/>'."\n");
           echo("\n</div>\n");
       }
-  }
+  // }
 echo("</div></p>\n");
 ?>
+</div>
 </p>
 <!-- Position -->
   <p>
@@ -151,11 +107,11 @@ echo("</div></p>\n");
   <div class="container" id = "position_fields">
     <?php
     $pos = 0;
-    foreach ($positions as $position) {
+    foreach ($data_array['pos'] as $position) {
         $pos++;
         echo('<div id="position'.$pos.'">' ."\n");
         echo('<p>Year:<input type="text" name="year'.$pos.'"');
-        echo('value="'.$position['year'].'"/>'. "\n");
+        echo('value="'.htmlentities($position['year']).'"/>'. "\n");
         echo('<input type="button" value="-" ');
         echo(' onclick = "$(\'#position'.$pos.'\').remove();return false;">'."\n");
         echo("</p>\n");
@@ -172,6 +128,7 @@ echo("</div></p>\n");
 </div>
 <script type="text/javascript">
 countPos = 0;
+countEdu = 0;
 $(document).ready(function(){
 window.console && console.log('Document ready called');
 // addPos
@@ -191,32 +148,38 @@ $('#position_fields').append(
 <textarea name="desc'+countPos+'" rows="8" cols="80"></textarea>\
 </div>');
 });
-//addEdu
+// addEdu
 $('#addEdu').click(function(event){
 event.preventDefault();
 if ( countEdu >= 9 ) {
-    alert("Maximum of nine education entries exceeded");
-    return;
+  alert("Maximum of nine education entries exceeded");
+  return;
 }
+countEdu++;
 window.console && console.log("Adding position" + countEdu);
-var source = $('#education_template').html();
-$('#edu_fields').append(source.replace(/@COUNT/@g, countEdu));
+var source = $('#edu_template').html();
+window.console && console.log(source);
+$('#edu_fields').append(source.replace(/@COUNT@/g, countEdu));
+// $('#edu_fields').append(source);
+// 需要click驱动Event handler
+  $('.school').autocomplete({
+    source: "school.php"
+  });
+});
+});
 
-//Event handler
-});
-});
 </script>
 <!--html替换  -->
-<script id='education_template' type="text">
+<script id="edu_template" type="text">
 <div id = "edu@COUNT@">
 <p>Year:
 <input type="text" name="edu_year@COUNT@" value="">
-<input type="button" onclick="$('edu_year@COUNT@').remove();return false;" value="-"><br></p>
+<input type="button" onclick="$('#edu@COUNT@').remove();return false;" value="-"><br></p>
 <p>School:
 <input type="text" size="80" name="edu_school@COUNT@" class="school" value="">
 </p>
 </div>
+
 </script>
-</div>
 </body>
 </html>

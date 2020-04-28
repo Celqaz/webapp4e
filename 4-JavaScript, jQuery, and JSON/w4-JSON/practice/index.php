@@ -11,7 +11,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title>4b53088e - Welcome to Resume Registry</title>
+    <title>1533e368 - Welcome to Resume Registry</title>
     <?php require_once "bootstrap.php"; ?>
   </head>
   <body>

@@ -11,9 +11,8 @@ function flashMsg()
         unset($_SESSION["error"]);
     };
 }
-
 # 插入数据-Profile
-function insertProfileData($pdo)
+function insertDataPro($pdo)
 {
     $sql = "INSERT INTO profile(user_id, first_name, last_name, email, headline, summary)
   VALUES (:user_id, :first_name, :last_name, :email, :headline, :summary)";
@@ -30,9 +29,7 @@ function insertProfileData($pdo)
     );
 }
 
-# 插入数据
-    # Get the Primary key
-    // $profile_id = $pdo->lastInsertId();
+# 插入数据-Position
 function insertDataPos($pdo, $profile_id)
 {
     # loop to insert
@@ -61,7 +58,7 @@ function insertDataPos($pdo, $profile_id)
         $rank++;
     }# for loop
 };
-// insert EDU
+//插入数据-Education
 function insertDataEdu($pdo, $profile_id)
 {
     $rank = 1;
@@ -94,10 +91,6 @@ function insertDataEdu($pdo, $profile_id)
         } else {
             $institution_id = $row['institution_id'];
         }
-        error_log('-----------'.$profile_id.'----------------');
-        error_log('-----------'.$institution_id.'----------------');
-        error_log('-----------'.$rank.'----------------');
-        error_log('-----------'.$edu_year.'----------------');
         $stmt= $pdo->prepare('INSERT INTO `education`(`profile_id`, `institution_id`, `rank` ,`year`)
         VALUES (:profile_id, :institution_id, :rank, :year)');
         $stmt->execute(
@@ -128,77 +121,62 @@ function loadPos($pdo, $profile_id)
     }
     return $positions;
 }
+// view-查找edu信息
+function resumeInfo($pdo, $profile_id)
+{
+    //profile
+    $stmt_pro = $pdo->prepare("SELECT profile_id, user_id,first_name, last_name, email, headline, summary FROM profile where profile_id= :xyz");
+    $stmt_pro->execute(array(":xyz" => $profile_id));
+    $arr['pro'] = $stmt_pro->fetch(PDO::FETCH_ASSOC);
+    //pos
+    $stmt_pos = $pdo->prepare("SELECT year,description FROM position where profile_id= :xyz");
+    $stmt_pos->execute(array(":xyz" =>  $profile_id));
+    $arr['pos'] = $stmt_pos->fetchAll(PDO::FETCH_ASSOC);
+    //edu
+    $stmt_edu  = $pdo->prepare("SELECT institution.name,education.year
+  FROM institution INNER JOIN education ON education.institution_id = institution.institution_id WHERE education.profile_id = :profile_id ORDER BY rank");
+    $stmt_edu -> execute(array(':profile_id' =>  $profile_id));
+    $arr['edu']= $stmt_edu->fetchAll(PDO::FETCH_ASSOC);
 
-
-// # 验证用户输入有效性
-// function validateProfile()
-// {
-//     if (strlen($_POST['first_name']) < 1 || strlen($_POST['last_name']) < 1 || strlen($_POST['email']) < 1
-//   ||  strlen($_POST['headline']) < 1 || strlen($_POST['summary']) < 1) {
-//         return 'All values are required';
-//     }
-//
-//     if (strpos($_POST['email'], '@') === false) {
-//         return 'Email address must contain @';
-//     }
-//     return  true;
-// }
-// // 验证加载的表单
-// function validatePos()
-// {
-//     for ($i=1; $i <= 9  ; $i++) {
-//         // error_log("Login success ".$_POST['email']);
-//         if (! isset($_POST['year'.$i])) {
-//             continue;
-//         }
-//         if (! isset($_POST['desc'.$i])) {
-//             continue;
-//         }
-//         if (! isset($_POST['edu_year'.$i])) {
-//             continue;
-//         }
-//         if (! isset($_POST['edu_school'.$i])) {
-//             continue;
-//         }
-//         $year = $_POST['year'.$i];
-//         $desc = $_POST['desc'.$i];
-//         $edu_year = $_POST['edu_year'.$i];
-//         $edu_school = $_POST['edu_school'.$i];
-//
-//         if (strlen($year) ==0 || strlen($desc) == 0 || strlen($edu_year) == 0 || strlen($edu_school) == 0) {
-//             return('All fields are required');
-//         }
-//
-//         if (! is_numeric($year)) {
-//             return('Position year must be numeric');
-//         }
-//         if (! is_numeric($edu_year)) {
-//             return('Education year must be numeric');
-//         }
-//         error_log($year.'--'.$desc.'--'.$edu_year.'--'.$edu_school.'\n');
-//     }
-//     return  true;
-// }
-// // 验证Edu
-// function validateEdu()
-// {
-//     for ($i=1; $i <= 9  ; $i++) {
-//         if (! isset($_POST['edu_year'.$i])) {
-//             continue;
-//         }
-//         if (! isset($_POST['edu_school'.$i])) {
-//             continue;
-//         }
-//         $edu_year = $_POST['edu_year'.$i];
-//         $edu_school = $_POST['edu_school'.$i];
-//
-//         if (strlen($edu_year) == 0 || strlen($edu_school) == 0) {
-//             return('All fields are required');
-//         }
-//
-//         if (! is_numeric($edu_year)) {
-//             return('Education year must be numeric');
-//         }
-//     }
-//     return  true;
-// }
+    // $arr.append()
+    return $arr;
+}
+// edit-更新信息
+function info_update($pdo, $profile_id)
+{
+    // update profile
+    $sql = "UPDATE profile SET user_id = :user_id, first_name = :first_name, last_name = :last_name,
+            email = :email, headline = :headline, summary = :summary
+            WHERE profile_id = :profile_id";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(
+        array(
+        ':user_id' => $_SESSION['user_id'],
+        ':first_name' => $_POST['first_name'],
+        ':last_name' => $_POST['last_name'],
+        ':email' => $_POST['email'],
+        ':headline' => $_POST['headline'],
+        ':summary' => $_POST['summary'],
+        ':profile_id' => $profile_id
+      )
+    );
+    // Clear out the old position entries
+    $sql = 'DELETE FROM position WHERE (profile_id = :profile_id)';
+    $stmt = $pdo -> prepare($sql);
+    $stmt -> execute(
+        array(
+        ':profile_id' => $profile_id
+      )
+    );
+    insertDataPos($pdo, $profile_id);
+    // Clear out the old education entries
+    $sql = 'DELETE FROM education WHERE (profile_id = :profile_id)';
+    $stmt = $pdo -> prepare($sql);
+    $stmt -> execute(
+        array(
+        ':profile_id' => $profile_id
+      )
+    );
+    insertDataEdu($pdo, $profile_id);
+    return true;
+}
